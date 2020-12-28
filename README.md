@@ -9,9 +9,7 @@ The Welsh Index of Multiple Deprivation (WIMD) ranks 1909 small areas of Wales f
 
 Some data from other sources, for example rates of COVID-19 cases, is only made available for slightly larger areas called Middle Super Output Areas (MSOAs). This makes it difficult to investigate how this data compares with WIMD.
 
-This script takes the scores behind the WIMD 2019 LSOA ranks, weights them by mid-2018 population estiamtes, and uses these population-weighted scores to generate ranks for the 410 MSOAs in Wales.
-
-This is *not* the *only* way you might try to generate MSOA WIMD ranks or similar metrics. (You could look at the proportion of the population in an MSOA that lives in the most deprived 25% of LSOAs for example.)
+This script takes the scores behind the WIMD 2019 LSOA ranks, weights them by mid-2018 population estiamtes, and uses these population-weighted scores to generate ranks for the 410 MSOAs in Wales. This is *not* the *only* way you might try to generate MSOA WIMD ranks or similar metrics, and the guidance on WIMD **specifically warns against this approach**. (You could look at the proportion of the population in an MSOA that lives in the most deprived 25% of LSOAs for example.)
 
 # Using WIMD
 
