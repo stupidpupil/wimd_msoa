@@ -1,5 +1,5 @@
 
-This script attempts to produce WIMD 2019 ranks for MSOAs.
+This script attempts to produce WIMD 2019 ranks for MSOAs in a **very** dubious manner.
 
 (You can find the output of the script in the *output* directory.)
 
