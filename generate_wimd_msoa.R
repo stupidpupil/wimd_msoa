@@ -146,4 +146,4 @@ msoa_wimd <- msoa_wimd %>%
     by = "MSOA Code"
     )
 
-msoa_wimd %>% arrange(-`Pseudo-WIMD 2019 rank`) %>% write_csv("output/wimd_msoa.csv")
+msoa_wimd %>% mutate(`Pseudo-WIMD 2019 rank` = msoa_count-`Pseudo-WIMD 2019 rank`+1) %>% arrange(`Pseudo-WIMD 2019 rank`) %>% write_csv("output/wimd_msoa.csv")
