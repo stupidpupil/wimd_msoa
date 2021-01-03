@@ -40,7 +40,7 @@ Consider using quintiles or deciles.
 
 If you're looking at an area smaller than all of Wales, e.g. Merthyr Tydfil, then consider reranking *within* that area.
 
-Be aware that some MSOAs contain enormous variation in deprivation. For example, [*Birchgrove* in Swansea](https://wimd.gov.wales/geography/msoa/W02000173) contains both one of the [most](https://wimd.gov.wales/lsoa/w01000801) and one of the [least](https://wimd.gov.wales/lsoa/w01000800) deprived LSOAs in the country. (This script ranks the Birchgrove MSOA as the 157th most deprived out of 410 MSOAs in Wales.)
+Be aware that some MSOAs contain enormous variation in deprivation. For example, [*Birchgrove* in Swansea](https://wimd.gov.wales/geography/msoa/W02000173) contains both one of the [most](https://wimd.gov.wales/lsoa/w01000801) and one of the [least](https://wimd.gov.wales/lsoa/w01000800) deprived LSOAs in the country. (This script ranks the Birchgrove MSOA as the 254th most deprived out of 410 MSOAs in Wales.)
 
 # Source data
 
