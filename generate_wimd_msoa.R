@@ -3,6 +3,7 @@ library(tidyverse)
 lsoa_wimd <- readODS::read_ods("data/wimd-2019-index-and-domain-scores-by-small-area_0.ods", sheet=2, skip=2) %>% tibble() %>% 
   mutate(`WIMD 2019 Decile` = ntile(`WIMD 2019`, 10))
 
+
 lsoa_pops <- readxl::read_xlsx("data/SAPE21DT1a-mid-2018-on-2019-LA-lsoa-syoa-estimates-formatted.xlsx", sheet=4, skip=3) %>% 
   filter(`Area Codes` %>% str_detect("^W01")) %>%
   rename(`LSOA Code` = `Area Codes`)
@@ -20,6 +21,8 @@ lsoa_to_msoa <- readODS::read_ods("data/Geography lookups - match LSOA to differ
     `MSOA Name` = `Middle Layer Super Output Area (MSOA) Name`,
     )
 
+print("Source data loaded.")
+
 lsoa_wimd <- lsoa_wimd %>%
   left_join(lsoa_to_msoa %>% select(`LSOA Code`, `MSOA Code`, `MSOA Name`), by="LSOA Code")
 
@@ -30,7 +33,7 @@ msoa_wimd <- lsoa_wimd %>%
   group_by(`MSOA Code`, `MSOA Name`) %>%
   summarise(
     `Total population` = sum(`All Ages`),
-    `WIMD 2019` = sum(Pop.weighted.WIMD)/(`Total population`),
+    `Pop-weighted WIMD score 2019` = sum(Pop.weighted.WIMD)/(`Total population`),
     `Local Authority English Name` = first(`Local Authority Name`),
     `Proportion of Population in 10% Most Deprived LSOAs` = sum(`All Ages`*(`WIMD 2019 Decile` >= 10))/(`Total population`),
     `Proportion of Population in 20% Most Deprived LSOAs` = sum(`All Ages`*(`WIMD 2019 Decile` >= 9))/(`Total population`),
@@ -42,12 +45,52 @@ msoa_wimd <- lsoa_wimd %>%
     `Proportion of Population in 80% Most Deprived LSOAs` = sum(`All Ages`*(`WIMD 2019 Decile` >= 3))/(`Total population`),
     `Proportion of Population in 90% Most Deprived LSOAs` = sum(`All Ages`*(`WIMD 2019 Decile` >= 2))/(`Total population`)
     ) %>%
-  ungroup() %>%
-  mutate(
-    `WIMD 2019 rank` = rank(`WIMD 2019`),
-    `WIMD 2019` = NULL
-  ) %>%
-  arrange(-`WIMD 2019 rank`)
+  ungroup()
+
+
+#
+# Repeated re-ranking
+#
+
+msoa_count <- msoa_wimd %>% nrow()
+weight = msoa_count/10
+
+msoa_wimd <- msoa_wimd %>% mutate(
+
+    CombinedRankScore = rank(`Proportion of Population in 50% Most Deprived LSOAs`, ties.method='min'),
+
+    CombinedRankScore = rank(CombinedRankScore, ties.method='min'),
+    CombinedRankScore = (msoa_count/weight * CombinedRankScore) + rank(`Proportion of Population in 30% Most Deprived LSOAs`, ties.method='min'),
+
+    CombinedRankScore = rank(CombinedRankScore, ties.method='min'),
+    CombinedRankScore = (msoa_count/weight * CombinedRankScore) + rank(`Proportion of Population in 70% Most Deprived LSOAs`, ties.method='min'),
+
+    CombinedRankScore = rank(CombinedRankScore, ties.method='min'),
+    CombinedRankScore = (msoa_count/weight * CombinedRankScore) + rank(`Proportion of Population in 20% Most Deprived LSOAs`, ties.method='min'),
+
+    CombinedRankScore = rank(CombinedRankScore, ties.method='min'),
+    CombinedRankScore = (msoa_count/weight * CombinedRankScore) + rank(`Proportion of Population in 80% Most Deprived LSOAs`, ties.method='min'),
+
+    CombinedRankScore = rank(CombinedRankScore, ties.method='min'),
+    CombinedRankScore = (msoa_count/weight * CombinedRankScore) + rank(`Proportion of Population in 10% Most Deprived LSOAs`, ties.method='min'),
+
+    CombinedRankScore = rank(CombinedRankScore, ties.method='min'),
+    CombinedRankScore = (msoa_count/weight * CombinedRankScore) + rank(`Proportion of Population in 70% Most Deprived LSOAs`, ties.method='min'),
+
+    CombinedRankScore = rank(CombinedRankScore, ties.method='min'),
+    CombinedRankScore = (msoa_count/weight * CombinedRankScore) + rank(`Proportion of Population in 40% Most Deprived LSOAs`, ties.method='min'),
+
+    CombinedRankScore = rank(CombinedRankScore, ties.method='min'),
+    CombinedRankScore = (msoa_count/weight * CombinedRankScore) + rank(`Proportion of Population in 60% Most Deprived LSOAs`, ties.method='min'),
+
+    CombinedRankScore = rank(CombinedRankScore, ties.method='min'),
+    CombinedRankScore = (msoa_count * CombinedRankScore) + rank(`Pop-weighted WIMD score 2019`, ties.method='min'),
+
+
+   `Pseudo-WIMD 2019 rank` = rank(CombinedRankScore),
+    CombinedRankScore = NULL,
+)
+
 
 #
 # Ntile comparisons
@@ -56,7 +99,7 @@ msoa_wimd <- lsoa_wimd %>%
 ntiles_n = 5
 
 for_ntile_comparisons <- msoa_wimd %>% 
-  mutate(`WIMD 2019 rank ntile` = ntile(`WIMD 2019 rank`, ntiles_n)) %>%
+  mutate(`Pseudo-WIMD 2019 rank ntile` = ntile(`Pseudo-WIMD 2019 rank`, ntiles_n)) %>%
   pivot_longer(starts_with('Proportion of Population')) %>%
   group_by(name) %>%
   mutate(
@@ -65,19 +108,24 @@ for_ntile_comparisons <- msoa_wimd %>%
   ungroup() %>%
   filter(!value %in% c(0,1)) %>%
   mutate(value = value_ntile, value_ntile = NULL) %>%
-  group_by(`WIMD 2019 rank ntile`, name, value) %>% count() %>%
-  mutate(name = name %>% str_replace_all("Proportion of Population in", "…"))
+  group_by(`Pseudo-WIMD 2019 rank ntile`, name, value) %>% count() %>%
+  mutate(
+    name = name %>% str_replace_all("Proportion of Population in", "…"),
+    discrepancy = abs(value-`Pseudo-WIMD 2019 rank ntile`)
 
+  )
 
-ggplot(for_ntile_comparisons, aes(x=`WIMD 2019 rank ntile`, y=`value`, size=n)) + 
+ntile_comparison_plot <- ggplot(for_ntile_comparisons, aes(x=`Pseudo-WIMD 2019 rank ntile`, y=`value`, size=n, colour=discrepancy)) + 
   facet_wrap(.~name) + 
   geom_point() + theme_minimal() + 
-  scale_x_continuous(breaks=1:ntiles_n, minor_breaks=c()) + 
-  scale_y_continuous(breaks=1:ntiles_n, minor_breaks=c()) + 
+  scale_x_continuous(breaks=1:ntiles_n, minor_breaks=c(), expand=expansion(add=0.5)) + 
+  scale_y_continuous(breaks=1:ntiles_n, minor_breaks=c(), expand=expansion(add=0.5)) + 
   labs(
-    x = "MSOA ntile based on population-weighted WIMD scores",
+    x = "Pseudo-WIMD 2019 rank ntile",
     y = "MSOA ntile based on % population resident in …"
-  )
+  ) + scale_color_gradient(low='blue', high='red')
+
+ggsave('output/ntile_comparison.png', ntile_comparison_plot, width=7.5, height=7, units='in')
 
 #
 # End ntile comparison
@@ -98,4 +146,4 @@ msoa_wimd <- msoa_wimd %>%
     by = "MSOA Code"
     )
 
-msoa_wimd %>% write_csv("output/wimd_msoa.csv")
+msoa_wimd %>% arrange(-`Pseudo-WIMD 2019 rank`) %>% write_csv("output/wimd_msoa.csv")

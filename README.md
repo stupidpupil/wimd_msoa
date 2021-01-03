@@ -1,5 +1,5 @@
 
-This script attempts to produce WIMD 2019 ranks for MSOAs in a **very** dubious manner, against the guidance provided by StatsWales.
+This script attempts to produce WIMD 2019 ranks for MSOAs in a **very** dubious manner.
 
 (You can find the output of the script in the *output* directory.)
 
@@ -9,17 +9,28 @@ The Welsh Index of Multiple Deprivation (WIMD) ranks 1909 small areas of Wales f
 
 Some data from other sources, for example rates of COVID-19 cases, is only made available for slightly larger areas called Middle Super Output Areas (MSOAs). This makes it difficult to investigate how this data compares with WIMD.
 
-## Aggregating WIMD to MSOAs
+# Aggregating WIMD to MSOAs
 
-This script takes the scores behind the WIMD 2019 LSOA ranks, weights them by mid-2018 population estiamtes, and uses these population-weighted scores to generate ranks for the 410 MSOAs in Wales. 
+This script combines two different metrics to try to produce WIMD-like ranks for MSOAs:
 
-The [WIMD guidance](https://gov.wales/sites/default/files/statistics-and-research/2020-06/welsh-index-multiple-deprivation-2019-guidance.pdf#page=12) explictly tells you **not** to do this:
+  1. Proportion of each MSOA's population resident in the most and least deprived LSOAs.
+  2. Each MSOA's population-weighted average of its LSOAs' WIMD scores.
+
+## Proportion of each MSOA's population resident in the most and least deprived LSOAs
+
+The first of these starts by looking at the proportion of each MSOA's population in the *50%* most deprived LSOAs, then the *30%* most deprived LSOAs and various other cut-offs, weighted to emphasise some more than others but ensure a decent degree of agreement with all.
+
+## Each MSOA's population-weighted average of its LSOAs' WIMD scores.
+
+The [WIMD guidance](https://gov.wales/sites/default/files/statistics-and-research/2020-06/welsh-index-multiple-deprivation-2019-guidance.pdf#page=12) explictly tells you **not** to do the second of these:
 
 > It is not valid to aggregate the ranks or scores to larger geographies by taking an average of the values for the small areas. 
 
-# Using WIMD
+This population-weighted average is only used as a last resort to try to disambiguate the ranks of the very least and most deprived MSOAs.
 
-Always use WIMD ranks (or quintiles or deciles etc.) when investigating how another measure relates to deprivation. (Do *not* use raw WIMD scores).
+# Using these Pseudo-WIMD ranks
+
+Consider using quintiles or deciles.
 
 If you're looking at an area smaller than all of Wales, e.g. Merthyr Tydfil, then consider reranking *within* that area.
 
