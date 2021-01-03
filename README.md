@@ -32,6 +32,8 @@ The [WIMD guidance](https://gov.wales/sites/default/files/statistics-and-researc
 
 > It is not valid to aggregate the ranks or scores to larger geographies by taking an average of the values for the small areas. 
 
+(This is in contrast to the [advice provided for aggregating English Indices of Deprivation](https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/833947/IoD2019_Research_Report.pdf#page=68); the scores for the two Indices have different properties.)
+
 This population-weighted average is only used as a last resort to try to disambiguate the ranks of the very least and most deprived MSOAs.
 
 # Using these Pseudo-WIMD ranks
